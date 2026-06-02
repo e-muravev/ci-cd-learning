@@ -1,0 +1,16 @@
+name: Deploy to Staging
+
+on:
+  workflow_dispatch: # только ручной запуск
+
+jobs:
+  deploy-prod:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      # url: http://${{ secrets.PROD_HOST }}:8080
+
+    steps:
+      - name: Deploy
+        run: echo "Deploying to staging"

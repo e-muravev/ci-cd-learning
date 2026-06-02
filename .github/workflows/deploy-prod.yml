@@ -1,0 +1,17 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch: # только ручной запуск
+
+jobs:
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      # url: http://${{ secrets.PROD_HOST }}:8080
+
+    steps:
+      - name: Deploy
+        run: echo "Deploying to production"
+        
