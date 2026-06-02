@@ -1,7 +1,11 @@
 name: Deploy to Staging
 
 on:
-  workflow_dispatch: # только ручной запуск
+  workflow_run:
+    workflows: ["CI (Test & Build)"]
+    types:
+      - completed
+    branches: [main]
 
 jobs:
   deploy-prod:
