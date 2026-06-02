@@ -3,8 +3,8 @@ run-name: ${{ github.actor }} is building and deploying 🚀
 
 on:
   push:
-    branches: [main]          # ← авто при пуше
-  workflow_dispatch:          # ← ручной деплой
+    branches: [main] # ← авто при пуше
+  workflow_dispatch: # ← ручной деплой
 
 jobs:
   test:
@@ -66,40 +66,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     environment:
       name: production
-      url: http://${{ secrets.SERVER_HOST }}:8080
+      # url: http://${{ secrets.SERVER_HOST }}:8080
 
     steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Install SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
-
-      - name: Add host to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Test SSH connection
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
-
-      - name: Deploy to server
-        run: |
-          ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=3 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-            cd /var/www/deploy-test &&
-            git pull origin main &&
-            docker-compose down &&
-            docker-compose up -d --build
-          "
-
       - name: Health check
-        run: |
-          echo "Waiting for container to start..."
-          sleep 10
-          curl -f http://${{ secrets.SERVER_HOST }}:8080 && echo "✅ Deploy successful!" || echo "❌ Health check failed"
+        run: echo "Deploying"
