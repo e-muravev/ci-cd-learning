@@ -2,7 +2,9 @@ name: CI/CD Pipeline
 run-name: ${{ github.actor }} is building and deploying 🚀
 
 on:
-  workflow_dispatch: # только ручной запуск
+  push:
+    branches: [main]          # ← авто при пуше
+  workflow_dispatch:          # ← ручной деплой
 
 jobs:
   test:
@@ -31,7 +33,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: test # ждём успешного завершения test
+    needs: test
 
     steps:
       - name: Checkout code
@@ -56,48 +58,48 @@ jobs:
           path: dist/
           retention-days: 7
 
-  # ========== 3. DEPLOY JOB ==========
-  # deploy:
-  #   name: Deploy to Server
-  #   runs-on: ubuntu-latest
-  #   needs: build # ждём успешного завершения build
-  #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' # только main/master
-  #   environment:
-  #     name: production
-  #     url: http://${{ secrets.SERVER_HOST }}:8080
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    # 👇 ВАЖНО: запускается только при ручном запуске
+    if: github.event_name == 'workflow_dispatch'
+    environment:
+      name: production
+      url: http://${{ secrets.SERVER_HOST }}:8080
 
-  #   steps:
-  #     - name: Download build artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: dist
-  #         path: dist/
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
 
-  #     - name: Install SSH key
-  #       uses: webfactory/ssh-agent@v0.9.0
-  #       with:
-  #         ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
-  #     - name: Add host to known_hosts
-  #       run: |
-  #         mkdir -p ~/.ssh
-  #         ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-  #     - name: Test SSH connection
-  #       run: |
-  #         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
 
-  #     - name: Deploy to server
-  #       run: |
-  #         ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=3 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-  #           cd /var/www/deploy-test &&
-  #           git pull origin main &&
-  #           docker-compose down &&
-  #           docker-compose up -d --build
-  #         "
+      - name: Deploy to server
+        run: |
+          ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=3 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            cd /var/www/deploy-test &&
+            git pull origin main &&
+            docker-compose down &&
+            docker-compose up -d --build
+          "
 
-  #     - name: Health check
-  #       run: |
-  #         echo "Waiting for container to start..."
-  #         sleep 10
-  #         curl -f http://${{ secrets.SERVER_HOST }}:8080 && echo "✅ Deploy successful!" || echo "❌ Health check failed"
+      - name: Health check
+        run: |
+          echo "Waiting for container to start..."
+          sleep 10
+          curl -f http://${{ secrets.SERVER_HOST }}:8080 && echo "✅ Deploy successful!" || echo "❌ Health check failed"
