@@ -2,11 +2,7 @@ name: CI/CD Pipeline
 run-name: ${{ github.actor }} is building and deploying 🚀
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch: # ручной запуск
+  workflow_dispatch: # только ручной запуск
 
 jobs:
   test:
