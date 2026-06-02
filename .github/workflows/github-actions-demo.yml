@@ -9,7 +9,6 @@ on:
   workflow_dispatch: # ручной запуск
 
 jobs:
-  # ========== 1. TEST JOB ==========
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -33,7 +32,6 @@ jobs:
       - name: Run unit tests
         run: npm run test || echo "No test script found"
 
-  # ========== 2. BUILD JOB ==========
   build:
     name: Build
     runs-on: ubuntu-latest
