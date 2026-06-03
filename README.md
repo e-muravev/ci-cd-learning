@@ -151,6 +151,7 @@ ci.yml Тесты, сборка, публикация образа в ghcr.io.
 deploy-staging.yml Ручной деплой образа :develop на staging-сервер.
 deploy-prod.yml Ручной деплой образа :latest на production-сервер.
 .gitignore Должен содержать .env, node_modules, dist.
+
 🔥 9. Частые ошибки и решения
 Ошибка Причина Решение
 npm ci fails Рассинхрон package-lock.json и package.json Выполнить npm install локально и запушить новый package-lock.json.
@@ -158,6 +159,7 @@ denied: installation not allowed Нет прав на запись в ghcr.io Д
 Host key verification failed Сервер не добавлен в known_hosts раннера Добавить шаг ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts.
 SSH permission denied Не тот ключ в Secrets, или публичный ключ не добавлен на сервер. Проверить ssh-copy-id, проверить содержимое секрета.
 При перезагрузке страницы 404 Nginx не знает про роутинг SPA. Проверить наличие try_files $uri $uri/ /index.html; в nginx.conf.
+
 📌 10. Памятка
 Установил новый пакет? → Запушти package-lock.json.
 
