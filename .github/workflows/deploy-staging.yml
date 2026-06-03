@@ -1,20 +1,35 @@
 name: Deploy to Staging
 
 on:
-  workflow_run:
-    workflows: ["CI (Test & Build)"]
-    types:
-      - completed
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  deploy-prod:
+  deploy:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     environment:
       name: staging
-      # url: http://${{ secrets.PROD_HOST }}:8080
+      url: http://staging.example.com
 
     steps:
-      - name: Deploy
-        run: echo "Deploying to staging"
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} "
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker pull ghcr.io/${{ github.repository }}:develop
+            
+            docker stop my-app || true
+            docker rm my-app || true
+            
+            docker run -d \
+              --name my-app \
+              -p 8080:80 \
+              --restart always \
+              ghcr.io/${{ github.repository }}:develop
+          "

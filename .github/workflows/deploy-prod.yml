@@ -1,17 +1,36 @@
 name: Deploy to Production
 
 on:
-  workflow_dispatch: # только ручной запуск
+  workflow_dispatch:
 
 jobs:
-  deploy-prod:
+  deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
     environment:
       name: production
-      # url: http://${{ secrets.PROD_HOST }}:8080
+      url: http://example.com
 
     steps:
-      - name: Deploy
-        run: echo "Deploying to production"
-        
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} "
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+           
+            docker pull ghcr.io/${{ github.repository }}:latest
+            
+            docker stop my-app || true
+            docker rm my-app || true
+            
+            docker run -d \
+              --name my-app \
+              -p 8080:80 \
+              --restart always \
+              ghcr.io/${{ github.repository }}:latest
+          "
