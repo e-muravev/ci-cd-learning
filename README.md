@@ -60,12 +60,16 @@ SSH нужен для того, чтобы GitHub Actions (раннер GitHub) 
 Как настроить (краткая инструкция)
 Создать новую пару ключей для GitHub Actions (чтобы не путать с личными):
 
-bash
+```bash
 ssh-keygen -t ed25519 -f ~/.ssh/github_actions_key -C "github-actions"
+```
+
 Положить публичный ключ на сервер:
 
-bash
+```bash
 ssh-copy-id -i ~/.ssh/github_actions_key.pub user@123.123.123.123
+```
+
 Если команда не сработала, вручную добавь содержимое .pub файла в ~/.ssh/authorized_keys на сервере.
 
 Добавить приватный ключ в GitHub Secrets:
@@ -114,12 +118,14 @@ sha-{hash} (уникальный тег для отката)
 
 По SSH подключаемся к серверу и выполняем команды:
 
-bash
+```bash
 docker login ghcr.io -u ${{ github.actor }} --password-stdin
 docker pull ghcr.io/${{ github.repository }}:latest   # или :develop
 docker stop my-app || true
 docker rm my-app || true
 docker run -d --name my-app -p 8080:80 --restart always ghcr.io/${{ github.repository }}:latest
+```
+
 📦 6. GitHub Container Registry (ghcr.io)
 Это хранилище Docker-образов, привязанное к твоему GitHub-аккаунту.
 
